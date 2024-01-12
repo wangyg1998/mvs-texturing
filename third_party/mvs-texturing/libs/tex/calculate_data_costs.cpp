@@ -98,7 +98,12 @@ photometric_outlier_detection(std::vector<FaceProjectionInfo> * infos, Settings 
         /* Compute new number of inliers (all views with a gauss value above a threshold). */
         for (std::size_t row = 0; row < infos->size(); ++row) {
             Eigen::RowVector3d color = mve_to_eigen(infos->at(row).mean_color).cast<double>();
-            double gauss_value = multi_gauss_unnormalized(color, var_mean, covariance_inv);
+            //double gauss_value = multi_gauss_unnormalized(color, var_mean, covariance_inv);
+			double gauss_value;
+			{
+				Eigen::Matrix<double, 1, 3> mean_removed = color - var_mean;
+				gauss_value =  std::exp(double(-0.5) * mean_removed * covariance_inv * mean_removed.adjoint());
+			}
             is_inlier[row] = (gauss_value >= gauss_rejection_threshold ? 1 : 0);
         }
         /* Resize Eigen matrix accordingly and fill with new inliers. */
@@ -113,7 +118,12 @@ photometric_outlier_detection(std::vector<FaceProjectionInfo> * infos, Settings 
     covariance_inv *= outlier_removal_factor;
     for (FaceProjectionInfo & info : *infos) {
         Eigen::RowVector3d color = mve_to_eigen(info.mean_color).cast<double>();
-        double gauss_value = multi_gauss_unnormalized(color, var_mean, covariance_inv);
+        //double gauss_value = multi_gauss_unnormalized(color, var_mean, covariance_inv);
+		double gauss_value;
+		{
+			Eigen::Matrix<double, 1, 3> mean_removed = color - var_mean;
+			gauss_value = std::exp(double(-0.5) * mean_removed * covariance_inv * mean_removed.adjoint());
+		}
         assert(0.0 <= gauss_value && gauss_value <= 1.0);
         switch(settings.outlier_removal) {
             case OUTLIER_REMOVAL_NONE: return true;

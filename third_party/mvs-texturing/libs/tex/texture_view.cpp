@@ -14,6 +14,7 @@
 #include <mve/image_tools.h>
 
 #include "texture_view.h"
+#include "XForm.h"
 
 TEX_NAMESPACE_BEGIN
 
@@ -37,6 +38,61 @@ TextureView::TextureView(std::size_t id, mve::CameraInfo const & camera,
     camera.fill_camera_pos(*pos);
     camera.fill_viewing_direction(*viewdir);
     camera.fill_world_to_cam(*world_to_cam);
+}
+
+
+TextureView::TextureView(std::size_t id, float* extrinsic, float* intrinsic, float width, float height, std::string const& image_file)
+    : id(id)
+    , image_file(image_file)
+    , width(width)
+    , height(height)
+{
+	{
+		world_to_cam[0] = extrinsic[0];
+		world_to_cam[1] = extrinsic[4];
+		world_to_cam[2] = extrinsic[8];
+		world_to_cam[3] = extrinsic[12];
+
+		world_to_cam[4] = extrinsic[1];
+		world_to_cam[5] = extrinsic[5];
+		world_to_cam[6] = extrinsic[9];
+		world_to_cam[7] = extrinsic[13];
+
+		world_to_cam[8] = extrinsic[2];
+		world_to_cam[9] = extrinsic[6];
+		world_to_cam[10] = extrinsic[10];
+		world_to_cam[11] = extrinsic[14];
+
+		world_to_cam[12] = extrinsic[3];
+		world_to_cam[13] = extrinsic[7];
+		world_to_cam[14] = extrinsic[11];
+		world_to_cam[15] = extrinsic[15];
+	}
+	{
+		trimesh::XForm<float> worldToCamera(extrinsic);
+		trimesh::XForm<float> cameraToWorld = trimesh::inv(worldToCamera);
+		trimesh::point cameraPos = cameraToWorld * trimesh::point(0.f);
+		pos[0] = cameraPos[0];
+		pos[1] = cameraPos[1];
+		pos[2] = cameraPos[2];
+		trimesh::point cameraDir = trimesh::normalized(cameraPos) * -1.f;
+		viewdir[0] = cameraDir[0];
+		viewdir[1] = cameraDir[1];
+		viewdir[2] = cameraDir[2];
+	}
+	{
+		projection[0] = intrinsic[0];
+		projection[1] = intrinsic[4];
+		projection[2] = intrinsic[8];
+
+		projection[3] = intrinsic[1];
+		projection[4] = intrinsic[5];
+		projection[5] = intrinsic[9];
+
+		projection[6] = intrinsic[2];
+		projection[7] = intrinsic[6];
+		projection[8] = intrinsic[10];
+	}
 }
 
 void
