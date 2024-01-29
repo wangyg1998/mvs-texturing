@@ -27,7 +27,7 @@ int main()
 
 	std::cout << "Load and prepare mesh: " << std::endl;
 	mve::TriangleMesh::Ptr mesh;
-	mesh = mve::geom::load_ply_mesh("D:\\mvs-texturing\\data\\04\\post.ply");
+	mesh = mve::geom::load_ply_mesh("D:\\mvs-texturing\\data\\02\\post.ply");
 	mve::MeshInfo mesh_info(mesh);
 	tex::prepare_mesh(&mesh_info, mesh);
 
@@ -35,13 +35,13 @@ int main()
 	tex::TextureViews texture_views;
 	{
 		trimesh::XForm<float> intrinsic;
-		intrinsic.read("D:\\mvs-texturing\\data\\04\\leftIntrinsic.txt");
+		intrinsic.read("D:\\mvs-texturing\\data\\02\\leftIntrinsic.txt");
 		for (int i = 0; i < 11; ++i)
 		{
 			trimesh::XForm<float> xf;
-			xf.read("D:\\mvs-texturing\\data\\04\\" + std::to_string(i) + ".txt");
+			xf.read("D:\\mvs-texturing\\data\\02\\" + std::to_string(i) + ".txt");
 			trimesh::invert(xf);
-			tex::TextureView view(i, xf.data(), intrinsic.data(), 1280, 1024, "D:\\mvs-texturing\\data\\04\\color_" + std::to_string(i) + ".ppm");
+			tex::TextureView view(i, xf.data(), intrinsic.data(), 1280, 1024, "D:\\mvs-texturing\\data\\02\\color_" + std::to_string(i) + ".png");
 			texture_views.push_back(view);
 		}
 	}
